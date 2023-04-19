@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <h1>Sign up</h1>
+
+    <form onsubmit="signup();return false">
+        <label for="fullName">fullName:</label>
+        <input type="text" id="fullName">
+        <br>
+
+        <label for="userName">userName:</label>
+        <input type="text" id="userName">
+        <br>
+
+        <label for="password">password:</label>
+        <input type="text" id="password">
+        <br>
+
+        <input type="submit" value="signup">
+
+    </form>
+
+    <p id="message"></p>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <button onclick="getAllUsers()">Get All Users</button>
+
+    <p id="allUserList"></p>
+    <script>
+        function signup() {
+            var fullName = document.getElementById("fullName").value;
+            var userName = document.getElementById("userName").value;
+            var password = document.getElementById("password").value;
+
+            axios.post('https://outrageous-puce-tuna.cyclic.app/user', {
+
+                "fullName": fullName,
+                "userName": userName,
+                "password": password
+
+            })
+                .then(function (response) {
+                    console.log(response.data);
+                    document.querySelector("#message").innerHTML = response.data;
+                })
+                .catch(function (error) {
+                    console.log(error.messsage);
+                });
+        }
+
+        function getAllUsers() {
+            axios.get('https://outrageous-puce-tuna.cyclic.app/user')
+            .then(function (response) {
+                // handle success
+                console.log(response.data);
+
+                response.data.map(eachUser => {
+                    document.querySelector("#allUserList").innerHTML += `<b>${eachUser.fullName}</b> ${eachUser.userName} ${eachUser.password}<br>` 
+                })
+            })
+        }
+    </script>
+</body>
+
+</html>
