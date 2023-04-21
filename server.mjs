@@ -17,40 +17,119 @@ const port = process.env.PORT || 3000;   // for checking which port is available
 // }
 
 
-let users = [];
+let users = [];     // replace this through mongoDb
 
-app.post("/user" , (req , res) => {
+// Generate  random number from 1 to 100000000000
 
-     console.log(req.body);
+function randomNumber() {
+  return Math.floor(Math.random() * 100000000000)
+}
 
-     users.push(req.body);
+app.post("/user", (req, res) => {
 
-     res.send("user is created");
+  console.log(req.body);
+
+  let newUser = {
+    id: randomNumber(),
+    fullName: req.body.fullName,
+    userName: req.body.userName,
+    password: req.body.password
+  }
+
+  users.push(newUser);
+
+  res.send("user is created");
 
 })
 
-app.get("/user" , (req , res) => {
-    res.send(users);
+app.get("/user/:userId", (req, res) => {   // get single user
+
+  let userId = req.params.userId;
+  let isFound = false;
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].id == userId) {
+      res.send(users[i]);
+      isFound = true;
+      break;
+    }
+  }
+  if (!isFound) {
+    res.send("user not found");
+  }
+})
+
+app.get("/users", (req, res) => {       // get all users
+  res.send(users);
 
 })
 
-app.put("/user" , (req , res) => {
-   res.send("user is modified");
+app.put("/user/:userId", (req, res) => {   // to modify single user
+
+  let userId = req.params.userId;
+  let userIndex = -1;
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].id == userId) {
+      userIndex = i;
+      break;
+    }
+  }
+
+  if (userIndex === -1) {
+    res.send("user not found");
+  } else {
+    if (req.body.fullName) {
+      users[userIndex].fullName = req.body.fullName;
+    }
+    if (req.body.userName) {
+      users[userIndex].userName = req.body.userName;
+    }
+    if (req.body.password) {
+      users[userIndex].password = req.body.password;
+    } else {
+      res.send(users[userIndex]);
+    }
+  }
 
 })
 
-app.delete("/user" , (req , res) => {
-   res.send("user is deleted");
+app.delete("/user/:userId", (req, res) => {    // delete single user
+
+  let userId = req.params.userId;
+  let userIndex = -1;
+
+  for (let i = 0; i < users.length; i++) {
+    if (users[i].id == userId) {
+      userIndex = i;
+      break;
+    }
+  }
+  if (userIndex === -1) {
+
+    res.send("user not found");
+
+  } else {
+    users.splice(userIndex, 1);
+    res.send("user is deleted")
+  }
+})
+
+app.delete("/user", (req, res) => {    // delete all user
+
+  users = [];
+
+  res.send("all users are deleted");
 
 })
 
 app.get('/', (req, res) => {
-  console.log("ek request server per i")  
+  console.log("ek request server per i")
   res.send('Hello World!')
 })
 
 app.get('/profile', (req, res) => {
-  console.log("ek request server per i")  
+  console.log("ek request server per i")
   res.send('This is a profile!')
 })
 
