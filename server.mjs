@@ -21,8 +21,9 @@ let users = [];     // replace this through mongoDb
 
 // Generate  random number from 1 to 100000000000
 
-function randomNumber() {
-  return Math.floor(Math.random() * 100000000000)
+function randomNumber(){
+
+  return Math.floor(Math.random() * 100000000000);
 }
 
 app.post("/user", (req, res) => {
@@ -33,30 +34,33 @@ app.post("/user", (req, res) => {
     id: randomNumber(),
     fullName: req.body.fullName,
     userName: req.body.userName,
-    password: req.body.password
+    Password: req.body.password
   }
 
   users.push(newUser);
 
-  res.send("user is created");
+  res.status(201).send("user is created");
 
 })
 
 app.get("/user/:userId", (req, res) => {   // get single user
 
   let userId = req.params.userId;
-  let isFound = false;
+  let isFound = false;                 // flag (abhi mila ni h)
 
-  for (let i = 0; i < users.length; i++) {
-    if (users[i].id == userId) {
+  for( i = 0 ; i < users.length ; i++ ){
+
+    if(users[i].id == userId){
       res.send(users[i]);
       isFound = true;
       break;
+
     }
   }
-  if (!isFound) {
-    res.send("user not found");
+  if(!isFound){
+    res.status(204).send("user not found");
   }
+  
 })
 
 app.get("/users", (req, res) => {       // get all users
@@ -69,27 +73,28 @@ app.put("/user/:userId", (req, res) => {   // to modify single user
   let userId = req.params.userId;
   let userIndex = -1;
 
-  for (let i = 0; i < users.length; i++) {
-    if (users[i].id == userId) {
+  for( i = 0 ; i < users.length ; i++){
+
+    if(users[i].id == userId){
+      res.send(users[i]);
       userIndex = i;
       break;
+
     }
   }
-
-  if (userIndex === -1) {
-    res.send("user not found");
-  } else {
-    if (req.body.fullName) {
+  if(userIndex == -1){
+    res.status(204).send("user not found");
+  }else{
+    if(req.body.fullName){
       users[userIndex].fullName = req.body.fullName;
     }
-    if (req.body.userName) {
+    if(req.body.userName){
       users[userIndex].userName = req.body.userName;
     }
-    if (req.body.password) {
+    if(req.body.password){
       users[userIndex].password = req.body.password;
-    } else {
-      res.send(users[userIndex]);
     }
+    res.send( users[userIndex]);
   }
 
 })
@@ -107,7 +112,7 @@ app.delete("/user/:userId", (req, res) => {    // delete single user
   }
   if (userIndex === -1) {
 
-    res.send("user not found");
+    res.status(204).send("user not found");
 
   } else {
     users.splice(userIndex, 1);
@@ -136,3 +141,5 @@ app.get('/profile', (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
+
+
