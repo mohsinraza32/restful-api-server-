@@ -1,142 +1,117 @@
-// const express = require('express')   // doesnt work in module js
-
 import express from 'express'
 import cors from "cors";
+import { nanoid } from 'nanoid'
 
 const app = express()
 app.use(express.json());
 app.use(cors())
-const port = process.env.PORT || 3000;   // for checking which port is available on heroku. (short form)
 
-// let port = null;     // for checking which port is available on heroku. (Long form)
+console.log(nanoid());
+const port = process.env.PORT || 3000;   
 
-// if(process.env.PORT){
-//   port = process.env.PORT;
-// }else{
-//   port = 3000;
-// }
+let userBase = [];     
 
+app.post("/signup", (req, res) => {
 
-let users = [];     // replace this through mongoDb
+  let body = req.body;
 
-// Generate  random number from 1 to 100000000000
+  if (!body.firstName || !body.lastName || !body.email || !body.password) {
 
-function randomNumber(){
+    res.status(400).send(
+                  `required fields missing, request example: 
+                  
+                  {
+                     "firstName: "John",
+                     "lastName:  "Doe",
+                     "email" :   "abc@abc.com",
+                     "password" :  "12345
 
-  return Math.floor(Math.random() * 100000000000);
-}
+                   }`
 
-app.post("/user", (req, res) => {
-
-  console.log(req.body);
-
-  let newUser = {
-    id: randomNumber(),
-    fullName: req.body.fullName,
-    userName: req.body.userName,
-    Password: req.body.password
+                 );
+                 return;
   }
 
-  users.push(newUser);
+  let isFound = false;
 
-  res.status(201).send("user is created");
-
-})
-
-app.get("/user/:userId", (req, res) => {   // get single user
-
-  let userId = req.params.userId;
-  let isFound = false;                 // flag (abhi mila ni h)
-
-  for( i = 0 ; i < users.length ; i++ ){
-
-    if(users[i].id == userId){
-      res.send(users[i]);
+  for (let i = 0; i < userBase.length; i++){
+    if(userBase[i].length === body.email.lowerCase()){
       isFound = true;
       break;
-
     }
   }
-  if(!isFound){
-    res.status(204).send("user not found");
-  }
-  
-})
-
-app.get("/users", (req, res) => {       // get all users
-  res.send(users);
-
-})
-
-app.put("/user/:userId", (req, res) => {   // to modify single user
-
-  let userId = req.params.userId;
-  let userIndex = -1;
-
-  for( i = 0 ; i < users.length ; i++){
-
-    if(users[i].id == userId){
-      res.send(users[i]);
-      userIndex = i;
-      break;
-
-    }
-  }
-  if(userIndex == -1){
-    res.status(204).send("user not found");
-  }else{
-    if(req.body.fullName){
-      users[userIndex].fullName = req.body.fullName;
-    }
-    if(req.body.userName){
-      users[userIndex].userName = req.body.userName;
-    }
-    if(req.body.password){
-      users[userIndex].password = req.body.password;
-    }
-    res.send( users[userIndex]);
+  if(isFound){    // this email is already exist
+    res.status(400).send({
+      message: `email ${body.email} already exist`
+    })
   }
 
+    let newUser = {
+      userId: nanoid(),
+      firstName: body.firstName,
+      lastName: body.lastName,
+      email: "body.email.lowerCase()",
+      password: body.password
+    }
+
+    userBase.push(newUser);
+
+    res.status(201).send({message: "user is created"});
 })
 
-app.delete("/user/:userId", (req, res) => {    // delete single user
+app.post("/login") , (req, res) => {
+ 
+  let body = req.body;
 
-  let userId = req.params.userId;
-  let userIndex = -1;
+  if (!body.email || !body.password) {
 
-  for (let i = 0; i < users.length; i++) {
-    if (users[i].id == userId) {
-      userIndex = i;
-      break;
+    res.status(400).send(
+                  `required fields missing, request example: 
+                  
+                  {
+                     "email" :   "abc@abc.com",
+                     "password" :  "12345
+
+                   }`
+
+                 );
+                 return;
+  }
+
+  let isFound = false;
+
+  for(let i = 0; i < userBase.length; i++){
+    if(userBase[i].email === body.email){
+
+      isFound = true;
+    
+    if(userBase[i].password === body.password){  // correct password
+       
+      res.status(200).send({
+        firstName: userBase[i].firstName,
+        lastName: userBase[i].lastName,
+        email: userBase[i].email,
+        message: "login successful",
+        token: "some unique token"
+
+      })
+      return;
+
+    }else{
+      res.status(401).send({
+        message: "incorrect password"
+      })
+      return;
     }
   }
-  if (userIndex === -1) {
-
-    res.status(204).send("user not found");
-
-  } else {
-    users.splice(userIndex, 1);
-    res.send("user is deleted")
-  }
-})
-
-app.delete("/user", (req, res) => {    // delete all user
-
-  users = [];
-
-  res.send("all users are deleted");
-
-})
-
-app.get('/', (req, res) => {
-  console.log("ek request server per i")
-  res.send('Hello World!')
-})
-
-app.get('/profile', (req, res) => {
-  console.log("ek request server per i")
-  res.send('This is a profile!')
-})
+}
+if(!isFound){
+  res.status(404).send({
+    message: "user not found"
+  })
+  return;
+}
+}
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
